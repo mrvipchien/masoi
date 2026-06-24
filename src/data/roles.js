@@ -117,7 +117,7 @@ const ROLES_DATA = [
     team: 'other',
     value: 0,
     wakesAtNight: true,
-    nightOrder: 8,
+    nightOrder: 0,
     phase: 'night1',
     ability:
       'Gây sự 2 người vào đêm đầu tiên. Bạn sẽ thắng nếu 2 người chơi ấy chết và bạn phải sống cho đến khi game kết thúc.',
@@ -150,9 +150,23 @@ const ROLES_DATA = [
     nightOrder: 2,
     phase: 'every',
     ability:
-      'Một đêm, bảo vệ cho 1 người chơi. Người đó sẽ không thể bị sói cắn chết trong đêm nay. Không được bảo vệ cùng 1 người 2 đêm liên tiếp.',
+      'Mỗi đêm, bảo vệ cho 1 người chơi. Người đó sẽ không thể bị sói cắn chết trong đêm nay. Không được bảo vệ cùng 1 người 2 đêm liên tiếp.',
     script:
       'Bảo Vệ hãy thức dậy. Bạn muốn bảo vệ ai trong đêm nay?',
+  },
+  {
+    id: 'priest',
+    name: 'Mục sư',
+    nameEn: 'Priest',
+    team: 'village',
+    value: 3,
+    wakesAtNight: true,
+    nightOrder: 2,
+    phase: 'every',
+    ability:
+      'Vào ban đêm, chọn 1 người để ban phước (1 lần duy nhất). Người chơi ấy không thể chết vào ban đêm (trừ tự sát).',
+    script:
+      'Mục sư hãy thức dậy. Bạn muốn ban phước cho ai?',
   },
   {
     id: 'werewolf',
@@ -246,7 +260,7 @@ const ROLES_DATA = [
     nameEn: 'Vampire',
     team: 'vampire',
     value: -7,
-    max: 4,
+    max: 6,
     wakesAtNight: true,
     nightOrder: 4,
     phase: 'every',
@@ -326,6 +340,20 @@ const ROLES_DATA = [
       'Nếu Tiên Tri chết, bạn sẽ trở thành Tiên Tri.',
     script:
       'Tiên Tri Tập sự hãy thức dậy để xem bạn có trở thành Tiên Tri hay không. Nếu bạn trở thành Tiên Tri, hãy chỉ vào 1 người để biết họ là Sói hay không.',
+  },
+  {
+    id: 'sorceress',
+    name: 'Bà Đồng',
+    nameEn: 'Sorceress',
+    team: 'werewolf',
+    value: -3,
+    wakesAtNight: true,
+    nightOrder: 6.9,
+    phase: 'every',
+    ability:
+      'Mỗi đêm, thức dậy truy tìm Tiên Tri. Bạn thuộc phe sói nhưng Tiên Tri sẽ soi thành người.',
+    script:
+      'Bà Đồng hãy thức dậy để truy tìm Tiên Tri.',
   },
   {
     id: 'hunter',
@@ -474,7 +502,7 @@ const ROLES_DATA = [
     value: 2,
     wakesAtNight: true,
     nightOrder: 8,
-    phase: 'night2',
+    phase: 'fromNight2',
     ability:
       'Mỗi đêm (trừ đêm đầu), chỉ 1 người chơi. Nếu người chơi đó là Sói thì họ chết. Nếu không, bạn chết.',
     script:
@@ -544,25 +572,11 @@ export const ROLES = ROLES_DATA.map((role) => ({
 
 export const ROLE_BY_ID = Object.fromEntries(ROLES.map((r) => [r.id, r]))
 
-/** Vai trò có ảnh trong public/roles/{id}.webp */
-const ROLE_IMAGE_IDS = new Set([
-  'alpha_wolf',
-  'apprentice_seer',
-  'aura_seer',
-  'cupid',
-  'cursed',
-  'diseased',
-  'guard',
-  'hunter',
-  'minion',
-  'prince',
-  'seer',
-  'tanner',
-  'vampire',
-  'villager',
-  'werewolf',
-  'witch',
-])
+const ROLE_IMAGE_IDS = new Set(
+  Object.keys(import.meta.glob('../../public/roles/*.webp')).map((path) =>
+    path.slice(path.lastIndexOf('/') + 1, -'.webp'.length),
+  ),
+)
 
 export function getRoleImageSrc(id) {
   return ROLE_IMAGE_IDS.has(id) ? `/roles/${id}.webp` : null

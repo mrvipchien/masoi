@@ -7,6 +7,54 @@ import {
 } from '../data/roles.js'
 import BalanceMeter from './BalanceMeter.jsx'
 
+const TEAM_ORDER = ['other', 'vampire', 'werewolf', 'village']
+
+function teamSortIndex(teamId) {
+  const index = TEAM_ORDER.indexOf(teamId)
+  return index === -1 ? TEAM_ORDER.length : index
+}
+
+function countByTeam(entries) {
+  const counts = Object.fromEntries(TEAM_ORDER.map((id) => [id, 0]))
+  for (const [id, count] of entries) {
+    const team = ROLE_BY_ID[id]?.team
+    if (team && team in counts) counts[team] += count
+  }
+  return counts
+}
+
+function sortEntriesByTeam(entries) {
+  return [...entries].sort((a, b) => {
+    const teamDiff =
+      teamSortIndex(ROLE_BY_ID[a[0]]?.team) -
+      teamSortIndex(ROLE_BY_ID[b[0]]?.team)
+    if (teamDiff !== 0) return teamDiff
+    return ROLE_BY_ID[b[0]].value - ROLE_BY_ID[a[0]].value
+  })
+}
+
+function TeamBreakdown({ counts }) {
+  const items = TEAM_ORDER.filter((id) => counts[id] > 0)
+  if (items.length === 0) return null
+
+  return (
+    <div className="setup-team-stats">
+      {items.map((teamId) => {
+        const team = TEAMS[teamId]
+        return (
+          <span
+            key={teamId}
+            className="team-tag small"
+            style={{ '--team-color': team.color }}
+          >
+            {team.label} {counts[teamId]}
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
 function balanceClass(total) {
   if (total > 3) return 'village'
   if (total < -3) return 'werewolf'
@@ -25,6 +73,8 @@ export default function SetupPanel({
 }) {
   const [expanded, setExpanded] = useState(false)
   const entries = Object.entries(selected).filter(([, c]) => c > 0)
+  const sortedEntries = sortEntriesByTeam(entries)
+  const teamCounts = countByTeam(entries)
   const valueLabel = totalValue > 0 ? `+${totalValue}` : String(totalValue)
 
   return (
@@ -42,7 +92,7 @@ export default function SetupPanel({
         <div className="setup-dock-info">
           {entries.length > 0 && (
             <div className="setup-dock-avatars" aria-hidden="true">
-              {entries.slice(0, 5).map(([id, count]) => {
+              {sortedEntries.slice(0, 5).map(([id, count]) => {
                 const role = ROLE_BY_ID[id]
                 const team = TEAMS[role.team]
                 const imageSrc = getRoleImageSrc(id)
@@ -74,9 +124,7 @@ export default function SetupPanel({
           )}
           <strong>{totalPlayers}</strong>
           <span>người chơi</span>
-          {entries.length > 0 && (
-            <span className="setup-dock-roles">{entries.length} vai trò</span>
-          )}
+          {entries.length > 0 && <TeamBreakdown counts={teamCounts} />}
         </div>
         <span className={`setup-dock-balance ${balanceClass(totalValue)}`}>
           {valueLabel}
@@ -92,6 +140,8 @@ export default function SetupPanel({
           <span className="muted">{totalPlayers} người chơi</span>
         </div>
 
+        {entries.length > 0 && <TeamBreakdown counts={teamCounts} />}
+
         <BalanceMeter total={totalValue} />
 
         {entries.length === 0 ? (
@@ -100,7 +150,7 @@ export default function SetupPanel({
           </p>
         ) : (
           <ul className="selected-list">
-            {entries.map(([id, count]) => {
+            {sortedEntries.map(([id, count]) => {
               const role = ROLE_BY_ID[id]
               const team = TEAMS[role.team]
               const canInc = canIncreaseRole(id, selected)

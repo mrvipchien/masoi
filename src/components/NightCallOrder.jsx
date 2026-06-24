@@ -212,7 +212,6 @@ function StepCard({
               type="button"
               className="step-hide-btn"
               onClick={onToggleVisibility}
-              title={`Ẩn bước "${PHASE_LABEL[phase]}"`}
             >
               Ẩn
             </button>
@@ -309,7 +308,7 @@ export default function NightCallOrder({ selected, totalPlayers, onBack }) {
               const visibilityKey = getVisibilityKey(step)
               const hidden = hiddenSteps.has(visibilityKey)
               const canToggle =
-                step.kind !== 'close' && getStepPhase(step) !== 'every'
+                step.kind !== 'close' && getStepPhase(step) !== 'every' && getStepPhase(step) !== 'fromNight2'
 
               if (step.kind === 'close' && hidden) return null
 
