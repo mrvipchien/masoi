@@ -589,6 +589,7 @@ export function canIncreaseRole(id, selected) {
 }
 
 export function clampRoleCount(id, count) {
+  
   const role = ROLE_BY_ID[id]
   if (!role || count <= 0) return 0
   return Math.min(count, role.max)

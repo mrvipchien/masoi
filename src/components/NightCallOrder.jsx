@@ -124,6 +124,16 @@ function buildNightSteps(selected, totalPlayers) {
   return items
 }
 
+function pickTwoRandomPlayers(totalPlayers) {
+  if (totalPlayers < 2) return null
+  const pool = Array.from({ length: totalPlayers }, (_, i) => i + 1)
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[pool[i], pool[j]] = [pool[j], pool[i]]
+  }
+  return [pool[0], pool[1]].sort((a, b) => a - b)
+}
+
 function StepCard({
   step,
   index,
@@ -132,6 +142,7 @@ function StepCard({
   hidden,
   canToggle,
   onToggleVisibility,
+  totalPlayers,
 }) {
   const phase = getStepPhase(step)
   const label = getStepLabel(step)
@@ -173,6 +184,7 @@ function StepCard({
   const name = isExtra ? extra.name : isSub ? sub.name : role.name
   const script = isExtra ? extra.script : isSub ? sub.script : role.script
   const moderatorNote = isExtra ? extra.moderatorNote : isSub ? sub.moderatorNote : null
+  const isCupid = step.kind === 'role' && role?.id === 'cupid'
   const memoPlaceholder = isExtra
     ? 'Ghi chú cho bước này...'
     : `VD: ${name} — Minh, Lan...`
@@ -218,6 +230,26 @@ function StepCard({
           )}
         </div>
         {script && <p className="step-script">"{script}"</p>}
+        {isCupid && (
+          <div className="step-cupid-random">
+            <button
+              type="button"
+              className="ghost-btn small"
+              disabled={totalPlayers < 2}
+              onClick={() => {
+                const pair = pickTwoRandomPlayers(totalPlayers)
+                if (pair) onNoteChange(`Số ${pair[0]} và ${pair[1]}`)
+              }}
+            >
+              Chọn ngẫu nhiên 2 số (1–{totalPlayers || '?'})
+            </button>
+            {totalPlayers < 2 && (
+              <span className="step-cupid-random-hint">
+                Cần ít nhất 2 người chơi
+              </span>
+            )}
+          </div>
+        )}
         {moderatorNote && <p className="step-note">{moderatorNote}</p>}
         <label className="step-memo">
           <span className="step-memo-label">Ghi chú</span>
@@ -324,6 +356,7 @@ export default function NightCallOrder({ selected, totalPlayers, onBack }) {
                   hidden={hidden}
                   canToggle={canToggle}
                   onToggleVisibility={() => toggleVisibility(visibilityKey)}
+                  totalPlayers={totalPlayers}
                 />
               )
             })

@@ -1116,6 +1116,19 @@ body {
   border-left: 2px solid var(--accent-2);
 }
 
+.step-cupid-random {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.step-cupid-random-hint {
+  font-size: 12px;
+  color: var(--muted);
+}
+
 .step-memo {
   display: flex;
   flex-direction: column;
